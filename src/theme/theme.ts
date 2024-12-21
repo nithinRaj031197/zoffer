@@ -1,4 +1,3 @@
-// src/theme/theme.ts
 import { DefaultTheme, DarkTheme as NativeDarkTheme, Theme } from "@react-navigation/native";
 import { COLORS } from "./colors";
 
@@ -17,9 +16,9 @@ export const LightTheme: Theme = {
     background: COLORS.background,
     primary: COLORS.primary,
     text: COLORS.textPrimary,
-    card: COLORS.primary,
-    border: "#E0E0E0",
-    notification: "#FF5252",
+    card: COLORS.background,
+    border: COLORS.border,
+    notification: COLORS.error,
   },
   fonts: FONT_FAMILY,
 };
@@ -32,9 +31,9 @@ export const DarkTheme: Theme = {
     background: "#121212",
     primary: COLORS.primary,
     text: "#FFFFFF",
-    card: COLORS.primary,
+    card: "#1E1E1E",
     border: "#333333",
-    notification: "#FF5252",
+    notification: COLORS.error,
   },
   fonts: FONT_FAMILY,
 };
@@ -43,4 +42,7 @@ export const DarkTheme: Theme = {
 export const CustomColors = {
   error: COLORS.error,
   success: COLORS.success,
+  placeholder: COLORS.placeholder,
+  lightText: COLORS.lightText,
+  secondary: COLORS.secondary,
 };

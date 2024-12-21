@@ -1,23 +1,19 @@
 // src/navigation/AppNavigator.tsx
 import React from "react";
 import { NavigationContainer, Theme } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import HomeScreen from "../screens/HomeScreen";
-
-const Stack = createNativeStackNavigator();
+import { useSelector } from "react-redux";
+import { RootState } from "../redux/store";
+import AuthNavigator from "./AuthNavigator";
+import BottomTabNavigator from "./BottomTabNavigator";
 
 interface AppNavigatorProps {
   theme: Theme;
 }
 
 const AppNavigator: React.FC<AppNavigatorProps> = ({ theme }) => {
-  return (
-    <NavigationContainer theme={theme}>
-      <Stack.Navigator id={undefined}>
-        <Stack.Screen name="Home" component={HomeScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+
+  return <NavigationContainer theme={theme}>{isAuthenticated ? <BottomTabNavigator /> : <AuthNavigator />}</NavigationContainer>;
 };
 
 export default AppNavigator;

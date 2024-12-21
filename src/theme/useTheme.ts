@@ -1,29 +1,41 @@
 // src/theme/useTheme.ts
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Appearance, ColorSchemeName } from "react-native";
 import { DarkTheme, LightTheme, CustomColors } from "./theme";
 
 export const useTheme = () => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">("system");
 
   useEffect(() => {
     const loadTheme = async () => {
-      const savedTheme = await AsyncStorage.getItem("theme");
-      if (savedTheme === "dark") setIsDarkMode(true);
+      const savedTheme = (await AsyncStorage.getItem("theme")) as "light" | "dark" | "system" | null;
+      if (savedTheme) {
+        setThemeMode(savedTheme);
+      } else {
+        setThemeMode("system");
+      }
     };
 
     loadTheme();
-  }, []);
 
-  const toggleTheme = async () => {
-    setIsDarkMode((prev) => {
-      const newTheme = !prev;
-      AsyncStorage.setItem("theme", newTheme ? "dark" : "light");
-      return newTheme;
+    // Listen for system theme changes
+    const subscription = Appearance.addChangeListener(({ colorScheme }: { colorScheme: ColorSchemeName }) => {
+      if (themeMode === "system") {
+        setThemeMode(colorScheme === "dark" ? "dark" : "light");
+      }
     });
+
+    return () => subscription.remove();
+  }, [themeMode]);
+
+  const toggleTheme = async (mode: "light" | "dark" | "system") => {
+    setThemeMode(mode);
+    await AsyncStorage.setItem("theme", mode);
   };
 
-  const theme = isDarkMode ? DarkTheme : LightTheme;
+  const systemTheme = Appearance.getColorScheme();
+  const theme = themeMode === "dark" ? DarkTheme : themeMode === "light" ? LightTheme : systemTheme === "dark" ? DarkTheme : LightTheme;
 
   return {
     theme: {

@@ -1,56 +1,47 @@
 // App.tsx
-import React from "react";
+import React, { useEffect } from "react";
 import AppNavigator from "./src/navigation/AppNavigator";
 import { useTheme } from "./src/theme/useTheme";
-import { SafeAreaView, StatusBar, Text, View, StyleSheet, TouchableOpacity } from "react-native";
+import { Alert, Platform, SafeAreaView, StatusBar } from "react-native";
+import { Provider } from "react-redux";
+import { store } from "./src/redux/store";
+import * as Notifications from "expo-notifications";
 
 const App = () => {
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
+
+  useEffect(() => {
+    const configureNotifications = async () => {
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status !== "granted") {
+        const { status: newStatus } = await Notifications.requestPermissionsAsync();
+        if (newStatus !== "granted") {
+          Alert.alert("Permission Denied", "You need to enable notifications to use this feature.");
+          return;
+        }
+      }
+
+      if (Platform.OS === "android") {
+        await Notifications.setNotificationChannelAsync("default", {
+          name: "default",
+          importance: Notifications.AndroidImportance.HIGH,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: "#FF231F7C",
+        });
+      }
+    };
+
+    configureNotifications();
+  }, []);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <StatusBar barStyle={theme.dark ? "light-content" : "dark-content"} backgroundColor={theme.colors.background} />
-      <View style={styles.container}>
-        <Text style={[styles.text, { color: theme.colors.text }]}>Theme Check</Text>
-        <Text style={[styles.text, { fontFamily: theme.fonts.regular.fontFamily, fontWeight: theme.fonts.regular.fontWeight }]}>Regular Font</Text>
-        <Text style={[styles.text, { fontFamily: theme.fonts.medium.fontFamily, fontWeight: theme.fonts.medium.fontWeight }]}>Medium Font</Text>
-        <Text style={[styles.text, { fontFamily: theme.fonts.bold.fontFamily, fontWeight: theme.fonts.bold.fontWeight }]}>Bold Font</Text>
-        <Text style={[styles.text, { fontFamily: theme.fonts.heavy.fontFamily, fontWeight: theme.fonts.heavy.fontWeight }]}>Heavy Font</Text>
-
-        {/* Toggle Button */}
-        <TouchableOpacity onPress={toggleTheme} style={styles.button}>
-          <Text style={styles.buttonText}>Toggle to {theme.dark ? "Light" : "Dark"} Theme</Text>
-        </TouchableOpacity>
-      </View>
-
-      <AppNavigator theme={theme} />
-    </SafeAreaView>
+    <Provider store={store}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+        <StatusBar barStyle={theme.dark ? "light-content" : "dark-content"} backgroundColor={theme.colors.background} />
+        <AppNavigator theme={theme} />
+      </SafeAreaView>
+    </Provider>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 16,
-  },
-  text: {
-    fontSize: 16,
-    marginVertical: 8,
-  },
-  button: {
-    marginTop: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    backgroundColor: "#4CAF50",
-  },
-  buttonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-});
 
 export default App;
