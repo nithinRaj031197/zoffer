@@ -1,3 +1,4 @@
+// Define common colors
 export const COLORS = {
   background: "#FFFFFF",
   primary: "#4CAF50",
@@ -8,4 +9,16 @@ export const COLORS = {
   placeholder: "#AAA",
   border: "#DDD",
   lightText: "#888",
+  darkBackground: "#121212",
+  darkCard: "#1E1E1E",
+  darkBorder: "#333333",
+  darkText: "#FFFFFF",
+};
+
+export const CustomColors = {
+  error: COLORS.error,
+  success: COLORS.success,
+  placeholder: COLORS.placeholder,
+  lightText: COLORS.lightText,
+  secondary: COLORS.secondary,
 };

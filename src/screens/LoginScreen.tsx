@@ -1,8 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Switch } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Switch, Alert, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useDispatch } from "react-redux";
-import { login } from "../redux/authSlice";
+import { loginState } from "../redux/authSlice";
+import { useTheme } from "../theme";
+import { useLazyOauth2Query, useLoginMutation } from "../api/authApi";
+import GoogleAuthButton from "../components/GoogleAuthButton";
+import { saveTokens } from "../utils/tokenStorage";
 
 const LoginScreen = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -11,24 +15,42 @@ const LoginScreen = ({ navigation }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
-  const handleLogin = () => {
-    if (email && password) {
-      dispatch(login(email));
+  const { theme: currentTheme } = useTheme();
+  const [login, { isLoading }] = useLoginMutation();
+  const [oauth2] = useLazyOauth2Query();
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Validation Error", "Email and Password are required!");
+      return;
+    }
+
+    try {
+      const response: any = await login({ email, password }).unwrap();
+      dispatch(loginState(response));
+
+      const accessToken = response?.data?.accessToken;
+      await saveTokens(accessToken, "");
+
+      navigation.navigate("Home");
+    } catch (error: any) {
+      console.error("Login Error:", error);
+      Alert.alert("Login Failed", error?.data?.message || "Invalid credentials. Please try again.");
     }
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: currentTheme.colors.background }]}>
       {/* Header */}
-      <Text style={styles.header}>Hi, Welcome Back! 👋</Text>
+      <Text style={[styles.header, { color: currentTheme.colors.text }]}>Hi, Welcome Back! 👋</Text>
 
       {/* Email Input */}
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Email</Text>
+        <Text style={[styles.label, { color: currentTheme.colors.text }]}>Email</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: currentTheme.colors.border, color: currentTheme.colors.text }]}
           placeholder="example@gmail.com"
-          placeholderTextColor="#aaa"
+          placeholderTextColor={currentTheme.colors.placeholder}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -38,18 +60,18 @@ const LoginScreen = ({ navigation }) => {
 
       {/* Password Input */}
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Password</Text>
-        <View style={styles.passwordContainer}>
+        <Text style={[styles.label, { color: currentTheme.colors.text }]}>Password</Text>
+        <View style={[styles.passwordContainer, { borderColor: currentTheme.colors.border }]}>
           <TextInput
-            style={styles.passwordInput}
+            style={[styles.passwordInput, { color: currentTheme.colors.text }]}
             placeholder="Enter Your Password"
-            placeholderTextColor="#aaa"
+            placeholderTextColor={currentTheme.colors.placeholder}
             secureTextEntry={!isPasswordVisible}
             value={password}
             onChangeText={setPassword}
           />
           <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
-            <Ionicons name={isPasswordVisible ? "eye-off-outline" : "eye-outline"} size={24} color="#888" />
+            <Ionicons name={isPasswordVisible ? "eye-off-outline" : "eye-outline"} size={24} color={currentTheme.colors.lightText} />
           </TouchableOpacity>
         </View>
       </View>
@@ -60,31 +82,35 @@ const LoginScreen = ({ navigation }) => {
           <Switch
             value={rememberMe}
             onValueChange={setRememberMe}
-            trackColor={{ false: "#ccc", true: "#4CAF50" }}
-            thumbColor={rememberMe ? "#FFFFFF" : "#f4f3f4"}
+            trackColor={{
+              false: currentTheme.colors.border,
+              true: currentTheme.colors.primary,
+            }}
+            thumbColor={rememberMe ? currentTheme.colors.background : "#f4f3f4"}
           />
-          <Text style={styles.rememberMeText}>Remember Me</Text>
+          <Text style={[styles.rememberMeText, { color: currentTheme.colors.text }]}>Remember Me</Text>
         </View>
         <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
-          <Text style={styles.forgotPassword}>Forgot Password?</Text>
+          <Text style={[styles.forgotPassword, { color: currentTheme.colors.secondary }]}>Forgot Password?</Text>
         </TouchableOpacity>
       </View>
 
       {/* Login Button */}
-      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-        <Text style={styles.loginButtonText}>Login</Text>
+      <TouchableOpacity style={[styles.loginButton, { backgroundColor: currentTheme.colors.primary }]} onPress={handleLogin} disabled={isLoading}>
+        {isLoading ? (
+          <ActivityIndicator color={currentTheme.colors.text} />
+        ) : (
+          <Text style={[styles.loginButtonText, { color: currentTheme.colors.text }]}>Login</Text>
+        )}
       </TouchableOpacity>
+
+      <GoogleAuthButton />
 
       {/* Sign Up Link */}
       <View style={styles.signUpContainer}>
-        <Text style={styles.signUpText}>Don't have an account? </Text>
+        <Text style={[styles.signUpText, { color: currentTheme.colors.text }]}>Don't have an account?</Text>
         <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
-          <Text style={styles.signUpLink}>Sign Up</Text>
-        </TouchableOpacity>
-      </View>
-      <View>
-        <TouchableOpacity onPress={() => navigation.navigate("PhoneNumber")}>
-          <Text>Go to Phone Number Screen</Text>
+          <Text style={[styles.signUpLink, { color: currentTheme.colors.secondary }]}>Sign Up</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -96,7 +122,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 24,
-    backgroundColor: "#fff",
   },
   header: {
     fontSize: 26,
@@ -109,22 +134,18 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: "#444",
     marginBottom: 5,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
     borderRadius: 8,
     padding: 12,
     fontSize: 14,
-    color: "#333",
   },
   passwordContainer: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#ddd",
     borderRadius: 8,
     paddingRight: 10,
   },
@@ -132,7 +153,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 12,
     fontSize: 14,
-    color: "#333",
   },
   row: {
     flexDirection: "row",
@@ -146,15 +166,12 @@ const styles = StyleSheet.create({
   },
   rememberMeText: {
     fontSize: 14,
-    color: "#444",
     marginLeft: 5,
   },
   forgotPassword: {
     fontSize: 14,
-    color: "#F44336",
   },
   loginButton: {
-    backgroundColor: "#4CAF50",
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: "center",
@@ -163,22 +180,19 @@ const styles = StyleSheet.create({
   loginButtonText: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#fff",
   },
   signUpContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    alignItems: "center",
     marginTop: 20,
   },
   signUpText: {
     fontSize: 14,
-    color: "#444",
   },
   signUpLink: {
     fontSize: 14,
-    color: "#4F46E5",
     fontWeight: "bold",
+    textDecorationLine: "underline",
     marginLeft: 4,
   },
 });

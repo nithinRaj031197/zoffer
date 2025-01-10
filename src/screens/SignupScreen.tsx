@@ -1,76 +1,137 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Appearance, ColorSchemeName } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSignupMutation } from "../api/authApi";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { COLORS } from "../theme/colors";
+import { LightTheme, DarkTheme } from "../theme/theme";
+import { useTheme } from "../theme";
 
 const SignupScreen = ({ navigation }) => {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
+  // Consolidated form data into a single state object
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    phone: "",
+    password: "",
+  });
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
-  const handleSignup = () => {
-    if (username && email && phone && password) {
-      console.log("Sign Up Successful");
+  const { theme: currentTheme } = useTheme();
+
+  // API Mutation Hook from Redux Toolkit Query
+  const [signup, { isLoading }] = useSignupMutation();
+
+  const handleInputChange = (field: keyof typeof formData, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleSignup = async () => {
+    const { username, email, phone, password } = formData;
+
+    if (!username || !email || !phone || !password) {
+      Alert.alert("Validation Error", "All fields are required!");
+      return;
+    }
+
+    try {
+      const response = await signup({
+        fullName: username,
+        email,
+        password,
+        phone,
+      }).unwrap();
+
+      Alert.alert("Success", "Signup successful!");
+      console.log("API Response:", response);
       navigation.navigate("Login");
+    } catch (err: unknown) {
+      console.error("Signup Error:", err);
+      if (isFetchBaseQueryError(err)) {
+        const errorMessage = (err.data as { message?: string })?.message || "An error occurred on the server.";
+        Alert.alert("Signup Failed", errorMessage);
+      } else if (isApiErrorResponse(err)) {
+        Alert.alert("Signup Failed", err.message || "An unexpected error occurred.");
+      } else {
+        Alert.alert("Signup Failed", "An unexpected error occurred. Please try again.");
+      }
     }
   };
 
+  // Type Guard: Check if error is FetchBaseQueryError
+  const isFetchBaseQueryError = (error: unknown): error is FetchBaseQueryError => {
+    return typeof error === "object" && error !== null && "data" in error;
+  };
+
+  // Type Guard: Check if error is ApiErrorResponse
+  const isApiErrorResponse = (error: unknown): error is { status: number; message?: string } => {
+    return typeof error === "object" && error !== null && "status" in error && "message" in error;
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: currentTheme.colors.background }]}>
       {/* Header */}
-      <Text style={styles.header}>Create an account</Text>
-      <Text style={styles.subHeader}>Connect with your friends today!</Text>
+      <Text style={[styles.header, { color: currentTheme.colors.text }]}>Create an account</Text>
+      <Text style={[styles.subHeader, { color: currentTheme.colors.lightText }]}>Find new offers in the market</Text>
 
       {/* Username Input */}
       <View style={styles.inputContainer}>
-        <TextInput style={styles.input} placeholder="Enter Your Username" placeholderTextColor="#aaa" value={username} onChangeText={setUsername} />
+        <TextInput
+          style={[styles.input, { borderColor: currentTheme.colors.border, color: currentTheme.colors.text }]}
+          placeholder="Enter Your Username"
+          placeholderTextColor={currentTheme.colors.placeholder}
+          value={formData.username}
+          onChangeText={(value) => handleInputChange("username", value)}
+        />
       </View>
 
       {/* Email Input */}
       <View style={styles.inputContainer}>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: currentTheme.colors.border, color: currentTheme.colors.text }]}
           placeholder="Enter Your Email"
-          placeholderTextColor="#aaa"
+          placeholderTextColor={currentTheme.colors.placeholder}
           keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
+          value={formData.email}
+          onChangeText={(value) => handleInputChange("email", value)}
         />
       </View>
 
       {/* Phone Number Input */}
       <View style={styles.inputContainer}>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: currentTheme.colors.border, color: currentTheme.colors.text }]}
           placeholder="Enter Your Phone Number"
-          placeholderTextColor="#aaa"
+          placeholderTextColor={currentTheme.colors.placeholder}
           keyboardType="phone-pad"
-          value={phone}
-          onChangeText={setPhone}
+          value={formData.phone}
+          onChangeText={(value) => handleInputChange("phone", value)}
         />
       </View>
 
       {/* Password Input */}
       <View style={styles.inputContainer}>
-        <View style={styles.passwordContainer}>
+        <View style={[styles.passwordContainer, { borderColor: currentTheme.colors.border }]}>
           <TextInput
-            style={styles.passwordInput}
+            style={[styles.passwordInput, { color: currentTheme.colors.text }]}
             placeholder="Enter Your Password"
-            placeholderTextColor="#aaa"
+            placeholderTextColor={currentTheme.colors.placeholder}
             secureTextEntry={!isPasswordVisible}
-            value={password}
-            onChangeText={setPassword}
+            value={formData.password}
+            onChangeText={(value) => handleInputChange("password", value)}
           />
           <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
-            <Ionicons name={isPasswordVisible ? "eye-off-outline" : "eye-outline"} size={24} color="#888" />
+            <Ionicons name={isPasswordVisible ? "eye-off-outline" : "eye-outline"} size={24} color={currentTheme.colors.lightText} />
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Sign Up Button */}
-      <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
-        <Text style={styles.signupButtonText}>Sign Up</Text>
+      <TouchableOpacity style={[styles.signupButton, { backgroundColor: currentTheme.colors.primary }]} onPress={handleSignup} disabled={isLoading}>
+        {isLoading ? <ActivityIndicator color={currentTheme.colors.text} /> : <Text style={styles.signupButtonText}>Sign Up</Text>}
       </TouchableOpacity>
 
       {/* Already Have an Account */}
@@ -100,7 +161,7 @@ const styles = StyleSheet.create({
   subHeader: {
     fontSize: 14,
     textAlign: "center",
-    color: "#888",
+    color: COLORS.lightText,
     marginBottom: 20,
   },
   inputContainer: {
@@ -108,7 +169,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: COLORS.border,
     borderRadius: 8,
     padding: 12,
     fontSize: 14,
@@ -118,7 +179,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: COLORS.border,
     borderRadius: 8,
     paddingRight: 10,
   },
@@ -129,7 +190,7 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   signupButton: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: COLORS.primary,
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: "center",
@@ -139,6 +200,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: "#fff",
+  },
+  errorText: {
+    color: "red",
+    marginTop: 10,
+    textAlign: "center",
   },
   loginContainer: {
     flexDirection: "row",
@@ -152,7 +218,7 @@ const styles = StyleSheet.create({
   },
   loginLink: {
     fontSize: 14,
-    color: "#4F46E5",
+    color: COLORS.secondary,
     fontWeight: "bold",
     textDecorationLine: "underline",
   },

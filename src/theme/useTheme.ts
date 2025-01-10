@@ -1,41 +1,40 @@
-// src/theme/useTheme.ts
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Appearance, ColorSchemeName } from "react-native";
 import { DarkTheme, LightTheme, CustomColors } from "./theme";
 
+// Define theme modes
+type ThemeMode = "light" | "dark";
+
 export const useTheme = () => {
-  const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">("system");
+  const [themeMode, setThemeMode] = useState<ThemeMode>("dark");
 
   useEffect(() => {
     const loadTheme = async () => {
-      const savedTheme = (await AsyncStorage.getItem("theme")) as "light" | "dark" | "system" | null;
-      if (savedTheme) {
-        setThemeMode(savedTheme);
-      } else {
-        setThemeMode("system");
+      try {
+        const savedTheme = (await AsyncStorage.getItem("theme")) as ThemeMode | null;
+        if (savedTheme) {
+          setThemeMode(savedTheme);
+        }
+      } catch (error) {
+        console.error("Failed to load theme from storage:", error);
       }
     };
 
     loadTheme();
+  }, []);
 
-    // Listen for system theme changes
-    const subscription = Appearance.addChangeListener(({ colorScheme }: { colorScheme: ColorSchemeName }) => {
-      if (themeMode === "system") {
-        setThemeMode(colorScheme === "dark" ? "dark" : "light");
-      }
-    });
-
-    return () => subscription.remove();
-  }, [themeMode]);
-
-  const toggleTheme = async (mode: "light" | "dark" | "system") => {
-    setThemeMode(mode);
-    await AsyncStorage.setItem("theme", mode);
+  // Toggle Theme Mode
+  const toggleTheme = async (mode: ThemeMode) => {
+    try {
+      setThemeMode(mode);
+      await AsyncStorage.setItem("theme", mode);
+    } catch (error) {
+      console.error("Failed to save theme to storage:", error);
+    }
   };
 
-  const systemTheme = Appearance.getColorScheme();
-  const theme = themeMode === "dark" ? DarkTheme : themeMode === "light" ? LightTheme : systemTheme === "dark" ? DarkTheme : LightTheme;
+  // Determine the active theme
+  const theme = themeMode === "dark" ? DarkTheme : LightTheme;
 
   return {
     theme: {
@@ -45,6 +44,7 @@ export const useTheme = () => {
         ...CustomColors,
       },
     },
+    themeMode,
     toggleTheme,
   };
 };

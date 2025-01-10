@@ -7,6 +7,10 @@ import { Provider } from "react-redux";
 import { store } from "./src/redux/store";
 import * as Notifications from "expo-notifications";
 
+if (__DEV__) {
+  require("./ReactotronConfig");
+}
+
 const App = () => {
   const { theme } = useTheme();
 
