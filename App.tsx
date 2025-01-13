@@ -1,5 +1,5 @@
 // App.tsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import AppNavigator from "./src/navigation/AppNavigator";
 import { useTheme } from "./src/theme/useTheme";
 import { Alert, Platform, SafeAreaView, StatusBar } from "react-native";

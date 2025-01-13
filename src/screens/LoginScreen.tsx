@@ -1,41 +1,69 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Switch, Alert, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { loginState } from "../redux/authSlice";
 import { useTheme } from "../theme";
-import { useLazyOauth2Query, useLoginMutation } from "../api/authApi";
+import { useLoginMutation } from "../api/authApi";
 import GoogleAuthButton from "../components/GoogleAuthButton";
 import { saveTokens } from "../utils/tokenStorage";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as Yup from "yup";
+import Toast from "react-native-toast-message";
 
 const LoginScreen = ({ navigation }) => {
   const dispatch = useDispatch();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
   const { theme: currentTheme } = useTheme();
   const [login, { isLoading }] = useLoginMutation();
-  const [oauth2] = useLazyOauth2Query();
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("Validation Error", "Email and Password are required!");
-      return;
-    }
+  // Validation schema
+  const validationSchema = Yup.object().shape({
+    email: Yup.string().email("Invalid email address").required("Email is required"),
+    password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
+  });
 
+  // React Hook Form
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const handleLogin = async (data) => {
     try {
-      const response: any = await login({ email, password }).unwrap();
-      dispatch(loginState(response));
-
+      const response: any = await login({ email: data.email, password: data.password }).unwrap();
       const accessToken = response?.data?.accessToken;
-      await saveTokens(accessToken, "");
 
-      navigation.navigate("Home");
+      if (response?.status && accessToken) {
+        dispatch(loginState(accessToken));
+        await saveTokens({ accessToken, refreshToken: "" });
+
+        Toast.show({
+          type: "success",
+          text1: "Login Successful",
+          text2: "Welcome back! Redirecting to your dashboard...",
+        });
+
+        reset();
+      }
     } catch (error: any) {
       console.error("Login Error:", error);
-      Alert.alert("Login Failed", error?.data?.message || "Invalid credentials. Please try again.");
+      Toast.show({
+        type: "error",
+        text1: "Login Failed",
+        text2: "Invalid email or password. Please try again.",
+      });
     }
   };
 
@@ -47,33 +75,62 @@ const LoginScreen = ({ navigation }) => {
       {/* Email Input */}
       <View style={styles.inputContainer}>
         <Text style={[styles.label, { color: currentTheme.colors.text }]}>Email</Text>
-        <TextInput
-          style={[styles.input, { borderColor: currentTheme.colors.border, color: currentTheme.colors.text }]}
-          placeholder="example@gmail.com"
-          placeholderTextColor={currentTheme.colors.placeholder}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
+        <Controller
+          control={control}
+          name="email"
+          defaultValue=""
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  borderColor: errors.email ? currentTheme.colors.error : currentTheme.colors.border,
+                  color: currentTheme.colors.text,
+                },
+              ]}
+              placeholder="example@gmail.com"
+              placeholderTextColor={currentTheme.colors.placeholder}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              value={value}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          )}
         />
+        {errors.email && <Text style={[styles.errorText, { color: currentTheme.colors.error }]}>{errors.email.message}</Text>}
       </View>
 
       {/* Password Input */}
       <View style={styles.inputContainer}>
-        <Text style={[styles.label, { color: currentTheme.colors.text }]}>Password</Text>
-        <View style={[styles.passwordContainer, { borderColor: currentTheme.colors.border }]}>
-          <TextInput
-            style={[styles.passwordInput, { color: currentTheme.colors.text }]}
-            placeholder="Enter Your Password"
-            placeholderTextColor={currentTheme.colors.placeholder}
-            secureTextEntry={!isPasswordVisible}
-            value={password}
-            onChangeText={setPassword}
-          />
-          <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
-            <Ionicons name={isPasswordVisible ? "eye-off-outline" : "eye-outline"} size={24} color={currentTheme.colors.lightText} />
-          </TouchableOpacity>
-        </View>
+        <Controller
+          control={control}
+          name="password"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <View
+              style={[
+                styles.passwordContainer,
+                {
+                  borderColor: errors.password ? currentTheme.colors.error : currentTheme.colors.border,
+                },
+              ]}
+            >
+              <TextInput
+                style={[styles.passwordInput, { color: currentTheme.colors.text }]}
+                placeholder="Enter Your Password"
+                placeholderTextColor={currentTheme.colors.placeholder}
+                secureTextEntry={!isPasswordVisible}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                value={value}
+              />
+              <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
+                <Ionicons name={isPasswordVisible ? "eye-off-outline" : "eye-outline"} size={24} color={currentTheme.colors.lightText} />
+              </TouchableOpacity>
+            </View>
+          )}
+        />
+        {errors.password && <Text style={[styles.errorText, { color: currentTheme.colors.error }]}>{errors.password.message}</Text>}
       </View>
 
       {/* Remember Me & Forgot Password */}
@@ -96,7 +153,11 @@ const LoginScreen = ({ navigation }) => {
       </View>
 
       {/* Login Button */}
-      <TouchableOpacity style={[styles.loginButton, { backgroundColor: currentTheme.colors.primary }]} onPress={handleLogin} disabled={isLoading}>
+      <TouchableOpacity
+        style={[styles.loginButton, { backgroundColor: currentTheme.colors.primary }]}
+        onPress={handleSubmit(handleLogin)}
+        disabled={isLoading}
+      >
         {isLoading ? (
           <ActivityIndicator color={currentTheme.colors.text} />
         ) : (
@@ -194,6 +255,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textDecorationLine: "underline",
     marginLeft: 4,
+  },
+  errorText: {
+    textAlign: "left",
+    fontSize: 12,
+    marginTop: 2,
   },
 });
 

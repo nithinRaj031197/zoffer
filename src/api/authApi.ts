@@ -1,6 +1,5 @@
 import { baseApi } from "./baseApi";
-import { saveTokens, removeTokens } from "../utils/tokenStorage";
-import { GOOGLE_AUTH_URL } from "./urls";
+import { removeTokens } from "../utils/tokenStorage";
 
 interface SignupRequest {
   fullName: string;
@@ -64,13 +63,7 @@ export const authApi = baseApi.injectEndpoints({
         }
       },
     }),
-    oauth2: builder.query({
-      query: () => ({
-        url: GOOGLE_AUTH_URL,
-        method: "GET",
-      }),
-    }),
   }),
 });
 
-export const { useSignupMutation, useLoginMutation, useLogoutMutation, useLazyOauth2Query } = authApi;
+export const { useSignupMutation, useLoginMutation, useLogoutMutation } = authApi;

@@ -18,6 +18,7 @@ const baseQuery = fetchBaseQuery({
       headers.set("Authorization", `Bearer ${token}`);
     }
     headers.set("Content-Type", "application/json");
+    headers.set("Accept", "application/json");
     return headers;
   },
 });
@@ -54,7 +55,7 @@ const baseQueryWithReAuth = async (args: any, api: any, extraOptions: any) => {
       const { accessToken, refreshToken: newRefreshToken } = refreshResult.data as RefreshTokenResponse;
 
       // Save the new tokens
-      await saveTokens(accessToken, newRefreshToken);
+      await saveTokens({ accessToken, refreshToken: newRefreshToken });
 
       // Retry the original request with the new access token
       result = await baseQuery(args, api, extraOptions);

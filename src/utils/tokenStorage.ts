@@ -4,7 +4,7 @@ const ACCESS_TOKEN_KEY = "access_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
 
 // Save tokens
-export const saveTokens = async (accessToken: string, refreshToken: string) => {
+export const saveTokens = async ({ accessToken, refreshToken }: { accessToken: string; refreshToken: string }) => {
   await AsyncStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
   await AsyncStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
 };

@@ -3,16 +3,16 @@ import { View, Text, Button, StyleSheet, Appearance } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../redux/store";
 import { useTheme } from "../theme/useTheme";
-import { logout } from "../redux/authSlice";
+import LogoutButton from "../components/LogoutButton";
 
-const SettingsScreen = () => {
+const SettingsScreen = ({ navigation }: { navigation: any }) => {
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
   const { theme, toggleTheme } = useTheme();
 
-  const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">("system");
+  const [themeMode, setThemeMode] = useState<"light" | "dark">("light");
 
-  const handleThemeChange = (mode: "light" | "dark" | "system") => {
+  const handleThemeChange = (mode: "light" | "dark") => {
     setThemeMode(mode);
     toggleTheme(mode); // Pass theme mode to the toggleTheme function
   };
@@ -33,15 +33,13 @@ const SettingsScreen = () => {
         <View style={styles.themeOptions}>
           <Button title="Light" onPress={() => handleThemeChange("light")} color={themeMode === "light" ? "#4CAF50" : "gray"} />
           <Button title="Dark" onPress={() => handleThemeChange("dark")} color={themeMode === "dark" ? "#4CAF50" : "gray"} />
-          <Button title="System" onPress={() => handleThemeChange("system")} color={themeMode === "system" ? "#4CAF50" : "gray"} />
+          {/* <Button title="System" onPress={() => handleThemeChange("system")} color={themeMode === "system" ? "#4CAF50" : "gray"} /> */}
         </View>
         <Text style={[styles.info, { color: theme.colors.text }]}>Current System Theme: {Appearance.getColorScheme()}</Text>
       </View>
 
       {/* Logout Button */}
-      <View style={styles.section}>
-        <Button title="Logout" onPress={() => dispatch(logout())} color="#F44336" />
-      </View>
+      <LogoutButton />
     </View>
   );
 };

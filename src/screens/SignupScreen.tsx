@@ -4,8 +4,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSignupMutation } from "../api/authApi";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { COLORS } from "../theme/colors";
-import { LightTheme, DarkTheme } from "../theme/theme";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as Yup from "yup";
 import { useTheme } from "../theme";
+import Toast from "react-native-toast-message";
 
 const SignupScreen = ({ navigation }) => {
   // Consolidated form data into a single state object
@@ -22,32 +25,50 @@ const SignupScreen = ({ navigation }) => {
   // API Mutation Hook from Redux Toolkit Query
   const [signup, { isLoading }] = useSignupMutation();
 
-  const handleInputChange = (field: keyof typeof formData, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
+  // Validation schema using Yup
+  const validationSchema = Yup.object().shape({
+    username: Yup.string().required("Username is required"),
+    email: Yup.string().email("Invalid email address").required("Email is required"),
+    phone: Yup.string()
+      .matches(/^\d{10}$/, "Phone number must be 10 digits")
+      .required("Phone number is required"),
+    password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
+  });
 
-  const handleSignup = async () => {
-    const { username, email, phone, password } = formData;
+  // React Hook Form
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      username: "",
+      email: "",
+      phone: "",
+      password: "",
+    },
+  });
 
-    if (!username || !email || !phone || !password) {
-      Alert.alert("Validation Error", "All fields are required!");
-      return;
-    }
-
+  const handleSignup = async (data) => {
     try {
       const response = await signup({
-        fullName: username,
-        email,
-        password,
-        phone,
+        fullName: data.username,
+        email: data.email,
+        phone: data.phone,
+        password: data.password,
       }).unwrap();
 
-      Alert.alert("Success", "Signup successful!");
-      console.log("API Response:", response);
+      Toast.show({
+        type: "success",
+        text1: "Sign Up Successful!",
+        text2: "You can now log in to your account.",
+      });
+
       navigation.navigate("Login");
+
+      reset();
     } catch (err: unknown) {
       console.error("Signup Error:", err);
       if (isFetchBaseQueryError(err)) {
@@ -79,58 +100,120 @@ const SignupScreen = ({ navigation }) => {
 
       {/* Username Input */}
       <View style={styles.inputContainer}>
-        <TextInput
-          style={[styles.input, { borderColor: currentTheme.colors.border, color: currentTheme.colors.text }]}
-          placeholder="Enter Your Username"
-          placeholderTextColor={currentTheme.colors.placeholder}
-          value={formData.username}
-          onChangeText={(value) => handleInputChange("username", value)}
+        <Controller
+          control={control}
+          name="username"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  borderColor: errors.username ? currentTheme.colors.error : currentTheme.colors.border,
+                  color: currentTheme.colors.text,
+                },
+              ]}
+              placeholder="Enter Your Username"
+              placeholderTextColor={currentTheme.colors.placeholder}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              value={value}
+            />
+          )}
         />
+
+        {errors.username && <Text style={[styles.errorText, { color: currentTheme.colors.error }]}>{errors.username.message}</Text>}
       </View>
 
       {/* Email Input */}
       <View style={styles.inputContainer}>
-        <TextInput
-          style={[styles.input, { borderColor: currentTheme.colors.border, color: currentTheme.colors.text }]}
-          placeholder="Enter Your Email"
-          placeholderTextColor={currentTheme.colors.placeholder}
-          keyboardType="email-address"
-          value={formData.email}
-          onChangeText={(value) => handleInputChange("email", value)}
+        <Controller
+          control={control}
+          name="email"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  borderColor: errors.email ? currentTheme.colors.error : currentTheme.colors.border,
+                  color: currentTheme.colors.text,
+                },
+              ]}
+              placeholder="Enter Your Email"
+              placeholderTextColor={currentTheme.colors.placeholder}
+              keyboardType="email-address"
+              onChangeText={onChange}
+              onBlur={onBlur}
+              value={value}
+            />
+          )}
         />
+        {errors.email && <Text style={[styles.errorText, { color: currentTheme.colors.error }]}>{errors.email.message}</Text>}
       </View>
 
       {/* Phone Number Input */}
       <View style={styles.inputContainer}>
-        <TextInput
-          style={[styles.input, { borderColor: currentTheme.colors.border, color: currentTheme.colors.text }]}
-          placeholder="Enter Your Phone Number"
-          placeholderTextColor={currentTheme.colors.placeholder}
-          keyboardType="phone-pad"
-          value={formData.phone}
-          onChangeText={(value) => handleInputChange("phone", value)}
+        <Controller
+          control={control}
+          name="phone"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  borderColor: errors.phone ? currentTheme.colors.error : currentTheme.colors.border,
+                  color: currentTheme.colors.text,
+                },
+              ]}
+              placeholder="Enter Your Phone Number"
+              placeholderTextColor={currentTheme.colors.placeholder}
+              keyboardType="phone-pad"
+              onChangeText={onChange}
+              onBlur={onBlur}
+              value={value}
+            />
+          )}
         />
+        {errors.phone && <Text style={[styles.errorText, { color: currentTheme.colors.error }]}>{errors.phone.message}</Text>}
       </View>
 
       {/* Password Input */}
       <View style={styles.inputContainer}>
-        <View style={[styles.passwordContainer, { borderColor: currentTheme.colors.border }]}>
-          <TextInput
-            style={[styles.passwordInput, { color: currentTheme.colors.text }]}
-            placeholder="Enter Your Password"
-            placeholderTextColor={currentTheme.colors.placeholder}
-            secureTextEntry={!isPasswordVisible}
-            value={formData.password}
-            onChangeText={(value) => handleInputChange("password", value)}
-          />
-          <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
-            <Ionicons name={isPasswordVisible ? "eye-off-outline" : "eye-outline"} size={24} color={currentTheme.colors.lightText} />
-          </TouchableOpacity>
-        </View>
+        <Controller
+          control={control}
+          name="password"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <View
+              style={[
+                styles.passwordContainer,
+                {
+                  borderColor: errors.password ? currentTheme.colors.error : currentTheme.colors.border,
+                },
+              ]}
+            >
+              <TextInput
+                style={[styles.passwordInput, { color: currentTheme.colors.text }]}
+                placeholder="Enter Your Password"
+                placeholderTextColor={currentTheme.colors.placeholder}
+                secureTextEntry={!isPasswordVisible}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                value={value}
+              />
+              <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
+                <Ionicons name={isPasswordVisible ? "eye-off-outline" : "eye-outline"} size={24} color={currentTheme.colors.lightText} />
+              </TouchableOpacity>
+            </View>
+          )}
+        />
+        {errors.password && <Text style={[styles.errorText, { color: currentTheme.colors.error }]}>{errors.password.message}</Text>}
       </View>
 
       {/* Sign Up Button */}
-      <TouchableOpacity style={[styles.signupButton, { backgroundColor: currentTheme.colors.primary }]} onPress={handleSignup} disabled={isLoading}>
+      <TouchableOpacity
+        style={[styles.signupButton, { backgroundColor: currentTheme.colors.primary }]}
+        onPress={handleSubmit(handleSignup)}
+        disabled={isLoading}
+      >
         {isLoading ? <ActivityIndicator color={currentTheme.colors.text} /> : <Text style={styles.signupButtonText}>Sign Up</Text>}
       </TouchableOpacity>
 
@@ -202,9 +285,9 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   errorText: {
-    color: "red",
-    marginTop: 10,
-    textAlign: "center",
+    marginTop: 2,
+    textAlign: "left",
+    fontSize: 12,
   },
   loginContainer: {
     flexDirection: "row",
