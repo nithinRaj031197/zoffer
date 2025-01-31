@@ -24,7 +24,7 @@ interface LoginResponse {
 }
 
 export const authApi = baseApi.injectEndpoints({
-  //   overrideExisting: false,
+  overrideExisting: true,
   endpoints: (builder) => ({
     signup: builder.mutation<SignupResponse, SignupRequest>({
       query: (userData) => ({
@@ -39,15 +39,6 @@ export const authApi = baseApi.injectEndpoints({
         method: "POST",
         body: userData,
       }),
-      //   async onQueryStarted(arg, { queryFulfilled }) {
-      //     try {
-      //       const { data } = await queryFulfilled;
-      //       console.log(data, "data------");
-      //       await saveTokens(data.accessToken, data.refreshToken);
-      //     } catch (err) {
-      //       console.error("Failed to save tokens:", err);
-      //     }
-      //   },
     }),
     logout: builder.mutation<void, void>({
       query: () => ({

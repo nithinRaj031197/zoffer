@@ -1,7 +1,6 @@
-// App.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import AppNavigator from "./src/navigation/AppNavigator";
-import { useTheme } from "./src/theme/useTheme";
+import { ThemeProvider, useTheme } from "./src/theme/useTheme"; // Only ThemeProvider is imported here
 import { Alert, Platform, SafeAreaView, StatusBar } from "react-native";
 import { Provider } from "react-redux";
 import { store } from "./src/redux/store";
@@ -12,8 +11,6 @@ if (__DEV__) {
 }
 
 const App = () => {
-  const { theme } = useTheme();
-
   useEffect(() => {
     const configureNotifications = async () => {
       const { status } = await Notifications.getPermissionsAsync();
@@ -40,11 +37,21 @@ const App = () => {
 
   return (
     <Provider store={store}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
-        <StatusBar barStyle={theme.dark ? "light-content" : "dark-content"} backgroundColor={theme.colors.background} />
-        <AppNavigator theme={theme} />
-      </SafeAreaView>
+      <ThemeProvider>
+        <ThemedApp />
+      </ThemeProvider>
     </Provider>
+  );
+};
+
+const ThemedApp = () => {
+  const { theme } = useTheme();
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <StatusBar barStyle={theme.dark ? "light-content" : "dark-content"} backgroundColor={theme.colors.background} />
+      <AppNavigator theme={theme} />
+    </SafeAreaView>
   );
 };
 

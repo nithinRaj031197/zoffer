@@ -6,15 +6,11 @@ import { useTheme } from "../theme/useTheme";
 import LogoutButton from "../components/LogoutButton";
 
 const SettingsScreen = ({ navigation }: { navigation: any }) => {
-  const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
-  const { theme, toggleTheme } = useTheme();
-
-  const [themeMode, setThemeMode] = useState<"light" | "dark">("light");
+  const { theme, themeMode, toggleTheme } = useTheme();
 
   const handleThemeChange = (mode: "light" | "dark") => {
-    setThemeMode(mode);
-    toggleTheme(mode); // Pass theme mode to the toggleTheme function
+    toggleTheme(mode);
   };
 
   return (

@@ -1,21 +1,21 @@
+// src/navigation/AppNavigator.tsx
 import React, { useState, useEffect } from "react";
 import { NavigationContainer, Theme } from "@react-navigation/native";
 import AuthNavigator from "./AuthNavigator";
-import BottomTabNavigator from "./BottomTabNavigator";
+import RootAuthenticatedNavigator from "./RootAuthenticatedNavigator"; // Import the new root navigator
 import { getAccessToken } from "../utils/tokenStorage";
 import { useDispatch, useSelector } from "react-redux";
 import { loginState, logoutState } from "../redux/authSlice";
 import { RootState } from "../redux/store";
-import Toast, { BaseToast } from "react-native-toast-message";
+import Toast from "react-native-toast-message";
 import ToastConfig from "../components/ToastConfig";
 
 interface AppNavigatorProps {
-  theme: Theme;
+  theme: any;
 }
 
 const AppNavigator: React.FC<AppNavigatorProps> = ({ theme }) => {
   const dispatch = useDispatch();
-
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = ({ theme }) => {
 
   return (
     <>
-      <NavigationContainer theme={theme}>{isAuthenticated ? <BottomTabNavigator /> : <AuthNavigator />}</NavigationContainer>
+      <NavigationContainer theme={theme}>{isAuthenticated ? <RootAuthenticatedNavigator /> : <AuthNavigator />}</NavigationContainer>
       <Toast config={ToastConfig} />
     </>
   );
