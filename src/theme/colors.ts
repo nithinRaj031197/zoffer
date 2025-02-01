@@ -9,6 +9,7 @@ export const COLORS = {
   placeholder: "#AAA",
   border: "#DDD",
   lightText: "#888",
+  lightBorder: "#E0E0E0",
   darkBackground: "#121212",
   darkCard: "#1E1E1E",
   darkBorder: "#333333",

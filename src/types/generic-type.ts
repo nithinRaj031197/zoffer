@@ -7,4 +7,5 @@ export type ProfileStackParamList = {
   Profile: undefined;
   MerchantRegistration: undefined;
   CreateOfferScreen: undefined;
+  Settings: undefined;
 };

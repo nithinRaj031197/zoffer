@@ -5,7 +5,7 @@ import { RootState } from "../redux/store";
 import { useTheme } from "../theme/useTheme";
 import LogoutButton from "../components/LogoutButton";
 
-const SettingsScreen = ({ navigation }: { navigation: any }) => {
+const SettingsScreen = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const { theme, themeMode, toggleTheme } = useTheme();
 
@@ -15,8 +15,6 @@ const SettingsScreen = ({ navigation }: { navigation: any }) => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Text style={[styles.header, { color: theme.colors.text }]}>Settings</Text>
-
       {/* User Profile Information */}
       <View style={styles.section}>
         <Text style={[styles.label, { color: theme.colors.text }]}>User Profile:</Text>
@@ -45,11 +43,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
-  header: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
+
   section: {
     marginBottom: 20,
   },

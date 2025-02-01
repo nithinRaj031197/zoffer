@@ -1,161 +1,288 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Button } from "react-native";
+import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { useTheme } from "../../theme";
+import { CONSTANTS } from "../../constants/utilities_basic";
 
 const CreateOfferScreen = () => {
+  const { theme: currentTheme } = useTheme();
+
   const [offerTitle, setOfferTitle] = useState("");
   const [description, setDescription] = useState("");
   const [discountPercentage, setDiscountPercentage] = useState("");
-  const [validityStart, setValidityStart] = useState("");
-  const [validityEnd, setValidityEnd] = useState("");
-  const [targetAudience, setTargetAudience] = useState("");
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
-  const handleCreateOffer = () => {
-    // Logic to create an offer
-    console.log({
-      offerTitle,
-      description,
-      discountPercentage,
-      validityStart,
-      validityEnd,
-      targetAudience,
-    });
-    alert("Offer Created Successfully!");
+  const handleStartDateChange = (event, selectedDate) => {
+    setShowStartDatePicker(false);
+    if (selectedDate) {
+      setStartDate(selectedDate);
+    }
+  };
+
+  const handleEndDateChange = (event, selectedDate) => {
+    setShowEndDatePicker(false);
+    if (selectedDate) {
+      setEndDate(selectedDate);
+    }
+  };
+
+  const handleStartTimeChange = (event, selectedTime) => {
+    setShowStartTimePicker(false);
+    if (selectedTime) {
+      const newStartDate = new Date(startDate);
+      newStartDate.setHours(selectedTime.getHours());
+      newStartDate.setMinutes(selectedTime.getMinutes());
+      setStartDate(newStartDate);
+    }
+  };
+
+  const handleEndTimeChange = (event, selectedTime) => {
+    setShowEndTimePicker(false);
+    if (selectedTime) {
+      const newEndDate = new Date(endDate);
+      newEndDate.setHours(selectedTime.getHours());
+      newEndDate.setMinutes(selectedTime.getMinutes());
+      setEndDate(newEndDate);
+    }
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.header}>Create New Offer</Text>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView
+        contentContainerStyle={[styles.container, { backgroundColor: currentTheme.colors.background }]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Offer Title */}
+        <Text style={[styles.label, { color: currentTheme.colors.text }]}>Offer Title</Text>
+        <TextInput
+          style={[
+            styles.input,
+            {
+              backgroundColor: currentTheme.colors.card,
+              borderColor: currentTheme.colors.border,
+              color: currentTheme.colors.text,
+            },
+          ]}
+          placeholder="Enter offer title"
+          placeholderTextColor={currentTheme.colors.placeholder}
+          value={offerTitle}
+          onChangeText={setOfferTitle}
+        />
 
-      {/* Offer Title */}
-      <Text style={styles.label}>Offer Title</Text>
-      <TextInput style={styles.input} placeholder="Enter offer title" value={offerTitle} onChangeText={setOfferTitle} />
+        {/* Description */}
+        <Text style={[styles.label, { color: currentTheme.colors.text }]}>Description</Text>
+        <TextInput
+          style={[
+            styles.input,
+            styles.textArea,
+            {
+              backgroundColor: currentTheme.colors.card,
+              borderColor: currentTheme.colors.border,
+              color: currentTheme.colors.text,
+            },
+          ]}
+          placeholder="Describe your offer"
+          placeholderTextColor={currentTheme.colors.placeholder}
+          value={description}
+          onChangeText={setDescription}
+          multiline
+          numberOfLines={4}
+        />
 
-      {/* Description */}
-      <Text style={styles.label}>Description</Text>
-      <TextInput
-        style={[styles.input, styles.textArea]}
-        placeholder="Describe your offer"
-        value={description}
-        onChangeText={setDescription}
-        multiline={true}
-      />
+        {/* Discount Percentage */}
+        <Text style={[styles.label, { color: currentTheme.colors.text }]}>Discount Percentage</Text>
+        <TextInput
+          style={[
+            styles.input,
+            {
+              backgroundColor: currentTheme.colors.card,
+              borderColor: currentTheme.colors.border,
+              color: currentTheme.colors.text,
+            },
+          ]}
+          placeholder="0"
+          placeholderTextColor={currentTheme.colors.placeholder}
+          keyboardType="numeric"
+          value={discountPercentage}
+          onChangeText={setDiscountPercentage}
+        />
 
-      {/* Discount Percentage */}
-      <Text style={styles.label}>Discount Percentage</Text>
-      <View style={styles.discountContainer}>
-        <TextInput style={styles.input} placeholder="0" keyboardType="numeric" value={discountPercentage} onChangeText={setDiscountPercentage} />
-        <Text style={styles.percentageSymbol}>%</Text>
-      </View>
+        {/* Validity Period */}
+        <Text style={[styles.label, { color: currentTheme.colors.text }]}>Validity Period</Text>
+        <View style={styles.dateRow}>
+          <TouchableOpacity
+            style={[
+              styles.dateInput,
+              {
+                backgroundColor: currentTheme.colors.card,
+                borderColor: currentTheme.colors.border,
+              },
+            ]}
+            onPress={() => setShowStartDatePicker(true)}
+          >
+            <Text style={{ color: currentTheme.colors.text }}>{startDate.toDateString()}</Text>
+            <Ionicons name="calendar-outline" size={20} color={currentTheme.colors.text} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.dateInput,
+              {
+                backgroundColor: currentTheme.colors.card,
+                borderColor: currentTheme.colors.border,
+              },
+            ]}
+            onPress={() => setShowStartTimePicker(true)}
+          >
+            <Text style={{ color: currentTheme.colors.text }}>
+              {startDate.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </Text>
+            <Ionicons name="time-outline" size={20} color={currentTheme.colors.text} />
+          </TouchableOpacity>
+        </View>
 
-      {/* Validity Period */}
-      <Text style={styles.label}>Validity Period</Text>
-      <View style={styles.dateContainer}>
-        <TextInput style={[styles.input, styles.dateInput]} placeholder="dd/mm/yyyy" value={validityStart} onChangeText={setValidityStart} />
-        <Ionicons name="calendar-outline" size={24} color="gray" />
-        <TextInput style={[styles.input, styles.dateInput]} placeholder="dd/mm/yyyy" value={validityEnd} onChangeText={setValidityEnd} />
-        <Ionicons name="calendar-outline" size={24} color="gray" />
-      </View>
+        {/* End Date & Time */}
+        <View style={styles.dateRow}>
+          <TouchableOpacity
+            style={[
+              styles.dateInput,
+              {
+                backgroundColor: currentTheme.colors.card,
+                borderColor: currentTheme.colors.border,
+              },
+            ]}
+            onPress={() => setShowEndDatePicker(true)}
+          >
+            <Text style={{ color: currentTheme.colors.text }}>{endDate.toDateString()}</Text>
+            <Ionicons name="calendar-outline" size={20} color={currentTheme.colors.text} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.dateInput,
+              {
+                backgroundColor: currentTheme.colors.card,
+                borderColor: currentTheme.colors.border,
+              },
+            ]}
+            onPress={() => setShowEndTimePicker(true)}
+          >
+            <Text style={{ color: currentTheme.colors.text }}>
+              {endDate.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </Text>
+            <Ionicons name="time-outline" size={20} color={currentTheme.colors.text} />
+          </TouchableOpacity>
+        </View>
 
-      {/* Attach Media */}
-      <Text style={styles.label}>Attach Media</Text>
-      <TouchableOpacity style={styles.mediaUpload}>
-        <Ionicons name="cloud-upload-outline" size={24} color="gray" />
-        <Text style={styles.mediaText}>Tap to upload or drag files here</Text>
-      </TouchableOpacity>
+        {/* Date Pickers */}
+        {showStartDatePicker && <DateTimePicker value={startDate} mode="date" display="default" onChange={handleStartDateChange} />}
+        {showEndDatePicker && <DateTimePicker value={endDate} mode="date" display="default" onChange={handleEndDateChange} />}
+        {showStartTimePicker && <DateTimePicker value={startDate} mode="time" display="default" onChange={handleStartTimeChange} />}
+        {showEndTimePicker && <DateTimePicker value={endDate} mode="time" display="default" onChange={handleEndTimeChange} />}
 
-      {/* Target Audience */}
-      <Text style={styles.label}>Target Audience</Text>
-      <TextInput style={styles.input} placeholder="Select categories" value={targetAudience} onChangeText={setTargetAudience} />
+        {/* Attach Media */}
+        <Text style={[styles.label, { color: currentTheme.colors.text }]}>Attach Media</Text>
+        <TouchableOpacity
+          style={[
+            styles.mediaInput,
+            {
+              backgroundColor: currentTheme.colors.card,
+              borderColor: currentTheme.colors.border,
+            },
+          ]}
+        >
+          <Ionicons name="cloud-upload-outline" size={20} color={currentTheme.colors.placeholder} />
+          <Text style={{ color: currentTheme.colors.placeholder }}>Tap to upload or drag files here</Text>
+        </TouchableOpacity>
 
-      {/* Create Offer Button */}
-      <TouchableOpacity style={styles.createButton} onPress={handleCreateOffer}>
-        <Text style={styles.createButtonText}>Create Offer</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        {/* Target Audience */}
+        <Text style={[styles.label, { color: currentTheme.colors.text }]}>Target Audience</Text>
+        <TextInput
+          style={[
+            styles.input,
+            {
+              backgroundColor: currentTheme.colors.card,
+              borderColor: currentTheme.colors.border,
+              color: currentTheme.colors.text,
+            },
+          ]}
+          placeholder="Select categories"
+          placeholderTextColor={currentTheme.colors.placeholder}
+          editable={false}
+        />
+
+        {/* Submit Button */}
+        <TouchableOpacity style={[styles.submitButton, { backgroundColor: currentTheme.colors.primary }]}>
+          <Text style={[styles.submitButtonText, { color: currentTheme.colors.text }]}>Create Offer</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#F9F9F9",
-    padding: 20,
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 20,
+    padding: 16,
+    paddingBottom: CONSTANTS.BOTTOM_NAV_HEIGHT + 10,
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
-    color: "#555",
     marginBottom: 8,
   },
   input: {
-    backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#E0E0E0",
     borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    padding: 10,
     fontSize: 14,
-    color: "#333",
     marginBottom: 16,
   },
   textArea: {
-    height: 100,
-    textAlignVertical: "top",
+    height: 80,
   },
-  discountContainer: {
+  dateRow: {
     flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  percentageSymbol: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#555",
-    marginLeft: 8,
-  },
-  dateContainer: {
-    flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 16,
   },
   dateInput: {
-    flex: 1,
-    marginRight: 8,
-  },
-  mediaUpload: {
-    backgroundColor: "#F0F0F0",
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    borderRadius: 8,
+    padding: 10,
+    flex: 1,
+    marginHorizontal: 4,
+    justifyContent: "space-between",
+  },
+  mediaInput: {
+    borderWidth: 1,
     borderRadius: 8,
     padding: 20,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 16,
   },
-  mediaText: {
-    fontSize: 14,
-    color: "gray",
-    marginTop: 8,
-  },
-  createButton: {
-    backgroundColor: "#007BFF",
+  submitButton: {
+    padding: 16,
     borderRadius: 8,
-    paddingVertical: 12,
     alignItems: "center",
-    justifyContent: "center",
+    marginTop: 20,
   },
-  createButtonText: {
+  submitButtonText: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#fff",
   },
 });
 

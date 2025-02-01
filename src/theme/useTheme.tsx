@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, PropsWithChildren } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { DarkTheme, LightTheme, CustomColors } from "./theme";
+import { DarkTheme, LightTheme } from "./theme";
 
 type ThemeMode = "light" | "dark";
 
@@ -21,7 +21,7 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
     ...DarkTheme,
     colors: {
       ...DarkTheme.colors,
-      ...CustomColors,
+      // ...CustomColors,
     },
   }));
 
@@ -48,7 +48,7 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
       ...activeTheme,
       colors: {
         ...activeTheme.colors,
-        ...CustomColors,
+        // ...CustomColors,
       },
     });
   }, [themeMode]);

@@ -1,11 +1,15 @@
 import React from "react";
-import { View, TouchableOpacity, StyleSheet, Platform, Text } from "react-native";
+import { View, TouchableOpacity, StyleSheet, Text } from "react-native";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../theme";
+import { CONSTANTS } from "../constants/utilities_basic";
 
 const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
+  const { theme } = useTheme();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.card, shadowColor: theme.colors.text }]}>
       {/* Tab Buttons */}
       <View style={styles.tabContainer}>
         {state.routes.map((route, index) => {
@@ -13,24 +17,19 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
           const isFocused = state.index === index;
 
           // Icon Mapping
-          const iconName =
-            route.name === "Home"
-              ? "home-outline"
-              : route.name === "Profile"
-              ? "person-outline"
-              : route.name === "Settings"
-              ? "settings-outline"
-              : "help-outline";
+          const iconName = route.name === "Home" ? "home-outline" : route.name === "Profile" ? "person-outline" : "help-outline";
 
           return (
             <TouchableOpacity key={route.key} onPress={() => navigation.navigate(route.name)} style={styles.tabButton}>
               <Ionicons
                 name={iconName}
-                size={isFocused ? 28 : 24}
-                color={isFocused ? "#000000" : "#888888"}
+                size={isFocused ? 20 : 16}
+                color={isFocused ? theme.colors.primary : theme.colors.lightText}
                 style={isFocused ? styles.iconFocused : styles.iconDefault}
               />
-              <Text style={[styles.tabLabel, isFocused && styles.tabLabelFocused]}>{route.name}</Text>
+              <Text style={[styles.tabLabel, { color: theme.colors.lightText }, isFocused && { color: theme.colors.primary, fontWeight: "bold" }]}>
+                {route.name}
+              </Text>
             </TouchableOpacity>
           );
         })}
@@ -44,15 +43,11 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     width: "100%",
-    height: 70,
-    backgroundColor: "#FFFFFF",
+    height: CONSTANTS.BOTTOM_NAV_HEIGHT,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
     elevation: 10,
-    shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: -3 },
@@ -66,7 +61,6 @@ const styles = StyleSheet.create({
   tabButton: {
     alignItems: "center",
     justifyContent: "center",
-    flex: 1,
   },
   iconDefault: {
     marginBottom: 4,
@@ -77,29 +71,6 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     fontSize: 12,
-    color: "#888888",
-  },
-  tabLabelFocused: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: "#000000",
-  },
-  fabButton: {
-    position: "absolute",
-    top: -35,
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: "#4CAF50",
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 5,
-    borderWidth: 2,
-    borderColor: "#FFFFFF",
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
   },
 });
 

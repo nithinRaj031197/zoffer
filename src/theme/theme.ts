@@ -1,11 +1,27 @@
 import { DefaultTheme, DarkTheme as NativeDarkTheme } from "@react-navigation/native";
-import { COLORS } from "./colors";
 
 const FONT_FAMILY = {
   regular: { fontFamily: "System", fontWeight: "400" },
   medium: { fontFamily: "System", fontWeight: "500" },
   bold: { fontFamily: "System", fontWeight: "700" },
   heavy: { fontFamily: "System", fontWeight: "900" },
+};
+
+export const COLORS = {
+  background: "#FFFFFF",
+  primary: "#4CAF50",
+  textPrimary: "#212121",
+  error: "#F44336",
+  success: "#4CAF50",
+  secondary: "#4F46E5",
+  placeholder: "#AAA",
+  border: "#DDD",
+  lightText: "#888",
+  lightBorder: "#E0E0E0",
+  darkBackground: "#121212",
+  darkCard: "#1E1E1E",
+  darkBorder: "#333333",
+  darkText: "#FFFFFF",
 };
 
 export const LightTheme = {
@@ -15,10 +31,16 @@ export const LightTheme = {
     ...DefaultTheme.colors,
     background: COLORS.background,
     primary: COLORS.primary,
+    secondary: COLORS.secondary,
     text: COLORS.textPrimary,
     card: COLORS.background,
     border: COLORS.border,
     notification: COLORS.error,
+    placeholder: COLORS.placeholder,
+    lightText: COLORS.lightText,
+    lightBorder: COLORS.lightBorder,
+    error: COLORS.error,
+    success: COLORS.success,
   },
   fonts: FONT_FAMILY,
   bw: "#000",
@@ -29,22 +51,18 @@ export const DarkTheme = {
   dark: true,
   colors: {
     ...NativeDarkTheme.colors,
-    background: "#121212",
+    background: COLORS.darkBackground,
     primary: COLORS.primary,
-    text: "#FFFFFF",
-    card: "#1E1E1E",
-    border: "#333333",
+    secondary: COLORS.secondary,
+    text: COLORS.darkText,
+    card: COLORS.darkCard,
+    border: COLORS.darkBorder,
     notification: COLORS.error,
+    placeholder: COLORS.placeholder,
+    lightText: COLORS.lightText,
+    error: COLORS.error,
+    success: COLORS.success,
   },
   fonts: FONT_FAMILY,
   bw: "#fff",
-};
-
-// Optional: Custom Colors
-export const CustomColors = {
-  error: COLORS.error,
-  success: COLORS.success,
-  placeholder: COLORS.placeholder,
-  lightText: COLORS.lightText,
-  secondary: COLORS.secondary,
 };

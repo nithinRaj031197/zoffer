@@ -1,8 +1,9 @@
 // src/navigation/AppNavigator.tsx
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { KeyboardAvoidingView, SafeAreaView, StyleSheet, Platform } from "react-native";
 import { NavigationContainer, Theme } from "@react-navigation/native";
 import AuthNavigator from "./AuthNavigator";
-import RootAuthenticatedNavigator from "./RootAuthenticatedNavigator"; // Import the new root navigator
+import RootAuthenticatedNavigator from "./RootAuthenticatedNavigator";
 import { getAccessToken } from "../utils/tokenStorage";
 import { useDispatch, useSelector } from "react-redux";
 import { loginState, logoutState } from "../redux/authSlice";
@@ -11,7 +12,7 @@ import Toast from "react-native-toast-message";
 import ToastConfig from "../components/ToastConfig";
 
 interface AppNavigatorProps {
-  theme: any;
+  theme: Theme;
 }
 
 const AppNavigator: React.FC<AppNavigatorProps> = ({ theme }) => {
@@ -37,11 +38,23 @@ const AppNavigator: React.FC<AppNavigatorProps> = ({ theme }) => {
   }, [dispatch]);
 
   return (
-    <>
-      <NavigationContainer theme={theme}>{isAuthenticated ? <RootAuthenticatedNavigator /> : <AuthNavigator />}</NavigationContainer>
-      <Toast config={ToastConfig} />
-    </>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"} keyboardVerticalOffset={0}>
+      <SafeAreaView style={styles.safeArea}>
+        <NavigationContainer theme={theme}>{isAuthenticated ? <RootAuthenticatedNavigator /> : <AuthNavigator />}</NavigationContainer>
+        <Toast config={ToastConfig} />
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
+});
 
 export default AppNavigator;
