@@ -89,13 +89,6 @@ const ProfileScreen = () => {
           </TouchableOpacity>
         )}
       </View>
-      <TouchableOpacity
-        onPress={() => {
-          navigation.navigate("CreateOfferScreen");
-        }}
-      >
-        <Text style={{ color: theme.colors.primary }}>Create Offer</Text>
-      </TouchableOpacity>
     </View>
   );
 };

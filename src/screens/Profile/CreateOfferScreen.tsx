@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useTheme } from "../../theme";
 import { CONSTANTS } from "../../constants/utilities_basic";
+import ImageUploader, { Media } from "../../components/ImageUploader";
 
 const CreateOfferScreen = () => {
   const { theme: currentTheme } = useTheme();
@@ -17,6 +18,7 @@ const CreateOfferScreen = () => {
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+  const [images, setImages] = useState<Media[]>([]);
 
   const handleStartDateChange = (event, selectedDate) => {
     setShowStartDatePicker(false);
@@ -191,20 +193,8 @@ const CreateOfferScreen = () => {
         {showStartTimePicker && <DateTimePicker value={startDate} mode="time" display="default" onChange={handleStartTimeChange} />}
         {showEndTimePicker && <DateTimePicker value={endDate} mode="time" display="default" onChange={handleEndTimeChange} />}
 
-        {/* Attach Media */}
-        <Text style={[styles.label, { color: currentTheme.colors.text }]}>Attach Media</Text>
-        <TouchableOpacity
-          style={[
-            styles.mediaInput,
-            {
-              backgroundColor: currentTheme.colors.card,
-              borderColor: currentTheme.colors.border,
-            },
-          ]}
-        >
-          <Ionicons name="cloud-upload-outline" size={20} color={currentTheme.colors.placeholder} />
-          <Text style={{ color: currentTheme.colors.placeholder }}>Tap to upload or drag files here</Text>
-        </TouchableOpacity>
+        {/* Image Upload Component */}
+        <ImageUploader images={images} setImages={setImages} allowMultiple={true} />
 
         {/* Target Audience */}
         <Text style={[styles.label, { color: currentTheme.colors.text }]}>Target Audience</Text>
@@ -283,6 +273,26 @@ const styles = StyleSheet.create({
   submitButtonText: {
     fontSize: 16,
     fontWeight: "bold",
+  },
+  mediaPreviewContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 16,
+  },
+  mediaPreview: {
+    width: 80,
+    height: 80,
+    marginRight: 8,
+    marginBottom: 8,
+    borderRadius: 8,
+    backgroundColor: "#F0F0F0",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  imagePreview: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 8,
   },
 });
 

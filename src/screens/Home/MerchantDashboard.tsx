@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../theme";
 import { CONSTANTS } from "../../constants/utilities_basic";
 
-const MerchantDashboard = () => {
+const MerchantDashboard = ({ navigation }: { navigation: any }) => {
   const { theme } = useTheme();
 
   const metrics = [
@@ -62,7 +62,12 @@ const MerchantDashboard = () => {
         </View>
 
         <View style={styles.footerButtons}>
-          <TouchableOpacity style={[styles.footerButton, { backgroundColor: theme.colors.primary }]}>
+          <TouchableOpacity
+            style={[styles.footerButton, { backgroundColor: theme.colors.primary }]}
+            onPress={() => {
+              navigation.navigate("CreateOfferScreen");
+            }}
+          >
             <Ionicons name="add-circle-outline" size={20} color="#fff" />
             <Text style={styles.footerButtonText}>Create Offer</Text>
           </TouchableOpacity>
