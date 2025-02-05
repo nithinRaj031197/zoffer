@@ -1,31 +1,24 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, PropsWithChildren } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DarkTheme, LightTheme } from "./theme";
+import { MyTheme } from "@react-navigation/native";
 
 type ThemeMode = "light" | "dark";
 
 interface ThemeContextProps {
-  theme: typeof DarkTheme;
+  theme: MyTheme;
   themeMode: ThemeMode;
   toggleTheme: (mode: ThemeMode) => void;
 }
 
-// Create the ThemeContext
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
 interface ThemeProviderProps extends PropsWithChildren {}
 
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   const [themeMode, setThemeMode] = useState<ThemeMode>("dark");
-  const [theme, setTheme] = useState(() => ({
-    ...DarkTheme,
-    colors: {
-      ...DarkTheme.colors,
-      // ...CustomColors,
-    },
-  }));
+  const [theme, setTheme] = useState(DarkTheme);
 
-  // Load the saved theme from AsyncStorage
   useEffect(() => {
     const loadTheme = async () => {
       try {
@@ -41,19 +34,11 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
     loadTheme();
   }, []);
 
-  // Update the active theme whenever `themeMode` changes
   useEffect(() => {
     const activeTheme = themeMode === "dark" ? DarkTheme : LightTheme;
-    setTheme({
-      ...activeTheme,
-      colors: {
-        ...activeTheme.colors,
-        // ...CustomColors,
-      },
-    });
+    setTheme(activeTheme);
   }, [themeMode]);
 
-  // Toggle Theme Mode
   const toggleTheme = async (mode: ThemeMode) => {
     try {
       setThemeMode(mode);
@@ -66,7 +51,6 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   return <ThemeContext.Provider value={{ theme, themeMode, toggleTheme }}>{children}</ThemeContext.Provider>;
 };
 
-// Custom hook to use the ThemeContext
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {

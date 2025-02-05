@@ -5,15 +5,17 @@ import { useTheme } from "../../theme";
 import { CONSTANTS } from "../../constants/utilities_basic";
 
 const MerchantDashboard = ({ navigation }: { navigation: any }) => {
-  const { theme } = useTheme();
+  const { theme } = useTheme(); // Accessing theme for dynamic styling
 
+  // Dashboard Metrics
   const metrics = [
     { icon: "stats-chart-outline", title: "Total Offers", value: "247" },
     { icon: "eye-outline", title: "Total Views", value: "15.2K" },
     { icon: "people-outline", title: "Interactions", value: "3.8K" },
-    { icon: "mouse-outline", title: "Clicks", value: "982" },
+    { icon: "arrow-forward-outline", title: "Clicks", value: "982" }, // Replaced "mouse-outline"
   ];
 
+  // Dummy Offer Data
   const offers = [
     {
       title: "Summer Sale 50% Off",
@@ -42,14 +44,11 @@ const MerchantDashboard = ({ navigation }: { navigation: any }) => {
           <TouchableOpacity>
             <Ionicons name="notifications-outline" size={24} color={theme.colors.text} />
           </TouchableOpacity>
-          {/* <TouchableOpacity style={styles.profileIcon}>
-            <Ionicons name="person-circle-outline" size={24} color={theme.colors.text} />
-          </TouchableOpacity> */}
         </View>
       </View>
 
       {/* Scrollable Content */}
-      <ScrollView contentContainerStyle={{}}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
         {/* Metrics Section */}
         <View style={styles.metricsContainer}>
           {metrics.map((metric, index) => (
@@ -61,12 +60,11 @@ const MerchantDashboard = ({ navigation }: { navigation: any }) => {
           ))}
         </View>
 
+        {/* Offer Actions */}
         <View style={styles.footerButtons}>
           <TouchableOpacity
             style={[styles.footerButton, { backgroundColor: theme.colors.primary }]}
-            onPress={() => {
-              navigation.navigate("CreateOfferScreen");
-            }}
+            onPress={() => navigation.navigate("CreateOfferScreen")}
           >
             <Ionicons name="add-circle-outline" size={20} color="#fff" />
             <Text style={styles.footerButtonText}>Create Offer</Text>
@@ -115,6 +113,7 @@ const MerchantDashboard = ({ navigation }: { navigation: any }) => {
   );
 };
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -138,15 +137,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  profileIcon: {
-    marginLeft: 16,
-  },
   metricsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    // marginVertical: 10,
     paddingHorizontal: 16,
+    paddingVertical: 10,
   },
   metricCard: {
     width: "48%",

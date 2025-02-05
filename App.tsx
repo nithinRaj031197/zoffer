@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import AppNavigator from "./src/navigation/AppNavigator";
-import { ThemeProvider, useTheme } from "./src/theme/useTheme"; // Only ThemeProvider is imported here
+import { ThemeProvider, useTheme } from "./src/theme/useTheme";
 import { Alert, Platform, SafeAreaView, StatusBar } from "react-native";
 import { Provider } from "react-redux";
 import { store } from "./src/redux/store";
