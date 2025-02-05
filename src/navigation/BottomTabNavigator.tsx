@@ -10,7 +10,7 @@ const Tab = createBottomTabNavigator();
 const BottomTabNavigator = () => {
   return (
     <SafeAreaView style={styles.container}>
-      <Tab.Navigator id={undefined} tabBar={(props) => <CustomTabBar {...props} />} screenOptions={{ headerShown: false }}>
+      <Tab.Navigator id={undefined} tabBar={(props) => <CustomTabBar {...props} />} screenOptions={{ headerShown: false, lazy: true }}>
         <Tab.Screen name="Home" component={HomePageNavigator} />
         <Tab.Screen name="Profile" component={ProfileStackNavigator} />
       </Tab.Navigator>

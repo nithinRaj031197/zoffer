@@ -8,7 +8,6 @@ export const LightTheme: MyTheme = {
   dark: false,
   colors: COLORS.light,
   fonts: FONT_FAMILY,
-  bw: "#000",
 };
 
 export const DarkTheme: MyTheme = {
@@ -16,5 +15,4 @@ export const DarkTheme: MyTheme = {
   dark: true,
   colors: COLORS.dark,
   fonts: FONT_FAMILY,
-  bw: "#fff",
 };

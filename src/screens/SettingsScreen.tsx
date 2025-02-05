@@ -1,13 +1,19 @@
-import React, { useState } from "react";
-import { View, Text, Button, StyleSheet, Appearance } from "react-native";
-import { useSelector, useDispatch } from "react-redux";
+import React from "react";
+import { View, Text, Button, StyleSheet, TouchableOpacity } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { useTheme } from "../theme/useTheme";
 import LogoutButton from "../components/LogoutButton";
+import { setDashboardType } from "../redux/dashboardSlice";
+import { Ionicons } from "@expo/vector-icons";
 
-const SettingsScreen = () => {
+const SettingsScreen = ({ navigation }: { navigation: any }) => {
   const { user } = useSelector((state: RootState) => state.auth);
   const { theme, themeMode, toggleTheme } = useTheme();
+
+  const dashboardType = useSelector((state: RootState) => state.dashboard.dashboardType);
+
+  const dispatch = useDispatch();
 
   const handleThemeChange = (mode: "light" | "dark") => {
     toggleTheme(mode);
@@ -29,8 +35,34 @@ const SettingsScreen = () => {
           <Button title="Dark" onPress={() => handleThemeChange("dark")} color={themeMode === "dark" ? "#4CAF50" : "gray"} />
           {/* <Button title="System" onPress={() => handleThemeChange("system")} color={themeMode === "system" ? "#4CAF50" : "gray"} /> */}
         </View>
-        <Text style={[styles.info, { color: theme.colors.text }]}>Current System Theme: {Appearance.getColorScheme()}</Text>
+        <Text style={[styles.info, { color: theme.colors.text }]}>Current System Theme: {themeMode}</Text>
       </View>
+
+      <View style={styles.dashboardOptions}>
+        <TouchableOpacity
+          style={[styles.dashboardButton, { backgroundColor: dashboardType === "merchant" ? theme.colors.primary : "gray" }]}
+          onPress={() => dispatch(setDashboardType("merchant"))}
+        >
+          <Text style={[styles.dashboardButtonText, { color: theme.colors.background }]}>Merchant Dashboard</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.dashboardButton, { backgroundColor: dashboardType === "user" ? theme.colors.primary : "gray" }]}
+          onPress={() => dispatch(setDashboardType("user"))}
+        >
+          <Text style={[styles.dashboardButtonText, { color: theme.colors.background }]}>User Dashboard</Text>
+        </TouchableOpacity>
+      </View>
+
+      <TouchableOpacity
+        style={[{ backgroundColor: theme.colors.primary }]}
+        onPress={() => {
+          navigation.navigate("BusinessProfile");
+        }}
+      >
+        <Ionicons name="business-outline" size={20} color={theme.colors.background} />
+        <Text style={[{ color: theme.colors.background }]}>Go to Business Profile</Text>
+      </TouchableOpacity>
 
       {/* Logout Button */}
       <LogoutButton />
@@ -64,6 +96,21 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 14,
     fontStyle: "italic",
+  },
+  dashboardOptions: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 10,
+  },
+  dashboardButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    elevation: 2,
+  },
+  dashboardButtonText: {
+    fontSize: 14,
+    fontWeight: "bold",
   },
 });
 

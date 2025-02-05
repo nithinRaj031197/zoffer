@@ -1,34 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Text, View, StyleSheet, ActivityIndicator } from "react-native";
-import { getAccessToken } from "../../utils/tokenStorage";
 import { useTheme } from "../../theme";
 import { useGetUserInfoQuery } from "../../api/usersApi";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootAuthenticatedNavigatorParamList } from "../../types/generic-type";
+import MerchantDashboard from "./MerchantDashboard";
+import UserDashboard from "./UserDashboard";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
 
 const HomeScreen = () => {
   const { theme: currentTheme } = useTheme();
   const navigation = useNavigation<NavigationProp<RootAuthenticatedNavigatorParamList>>();
 
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const dashboardType = useSelector((state: RootState) => state.dashboard.dashboardType);
 
   const { data, isLoading } = useGetUserInfoQuery({});
   const userData = data?.data;
   const firstTimeLogin = userData?.firstTimeLogin;
-
-  useEffect(() => {
-    const fetchAccessToken = async () => {
-      try {
-        const token = await getAccessToken();
-
-        setAccessToken(token);
-      } catch (error) {
-        console.error("Failed to get access token:", error);
-      }
-    };
-
-    fetchAccessToken();
-  }, []);
 
   useEffect(() => {
     if (!isLoading && firstTimeLogin) {
@@ -47,8 +36,7 @@ const HomeScreen = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: currentTheme.colors.background }]}>
-      <Text style={[styles.header, { color: currentTheme.bw }]}>HomeScreen</Text>
-      <Text style={[styles.tokenText, { color: currentTheme.colors.primary }]}>Access Token: {accessToken ? accessToken : "No token found"}</Text>
+      {dashboardType === "merchant" ? <MerchantDashboard navigation={navigation} /> : <UserDashboard />}
     </View>
   );
 };
@@ -58,7 +46,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 24,
   },
   header: {
     fontSize: 24,

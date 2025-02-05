@@ -29,9 +29,9 @@ const ProfileScreen = () => {
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { backgroundColor: theme.colors.card, borderBottomColor: theme.colors.border }]}>
-        <TouchableOpacity>
+        {/* <TouchableOpacity>
           <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Profile</Text>
         <TouchableOpacity onPress={handleSettingsNavigation}>
           <Ionicons name="settings-outline" size={24} color={theme.colors.text} />

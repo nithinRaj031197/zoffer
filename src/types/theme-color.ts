@@ -3,7 +3,6 @@ import { DefaultTheme, Theme as NavigationTheme } from "@react-navigation/native
 // Extend the DefaultTheme interface to add custom properties
 declare module "@react-navigation/native" {
   export interface MyTheme extends NavigationTheme {
-    bw: string; // Black or White color based on theme mode
     fonts: {
       regular: { fontFamily: string; fontWeight: "400" | "normal" };
       medium: { fontFamily: string; fontWeight: "500" | "normal" };
@@ -23,6 +22,7 @@ declare module "@react-navigation/native" {
       lightBorder?: string;
       error: string;
       success: string;
+      bw: string;
     };
   }
 }

@@ -64,7 +64,7 @@ const MerchantRegistrationScreen = () => {
             onChangeText={setMobileNumber}
           />
           <TouchableOpacity style={[styles.buttonSmall, { backgroundColor: theme.colors.primary }]} onPress={handleGetOtp}>
-            <Text style={[styles.buttonText, { color: theme.bw }]}>Get OTP</Text>
+            <Text style={[styles.buttonText, { color: theme.colors.bw }]}>Get OTP</Text>
           </TouchableOpacity>
         </View>
 
@@ -80,7 +80,7 @@ const MerchantRegistrationScreen = () => {
             onChangeText={setOtp}
           />
           <TouchableOpacity style={[styles.buttonSmall, { backgroundColor: theme.colors.primary }]} onPress={handleVerifyOtp}>
-            <Text style={[styles.buttonText, { color: theme.bw }]}>Verify</Text>
+            <Text style={[styles.buttonText, { color: theme.colors.bw }]}>Verify</Text>
           </TouchableOpacity>
         </View>
 
@@ -137,7 +137,7 @@ const MerchantRegistrationScreen = () => {
 
         {/* Continue Button */}
         <TouchableOpacity style={[styles.buttonLarge, { backgroundColor: theme.colors.primary }]} onPress={handleContinue}>
-          <Text style={[styles.buttonText, { color: theme.bw }]}>Continue</Text>
+          <Text style={[styles.buttonText, { color: theme.colors.bw }]}>Continue</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

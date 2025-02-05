@@ -1,4 +1,6 @@
-export const COLORS = {
+import { MyTheme } from "@react-navigation/native";
+
+export const COLORS: { light: MyTheme["colors"]; dark: MyTheme["colors"] } = {
   light: {
     background: "#FFFFFF",
     primary: "#4CAF50",
@@ -12,6 +14,7 @@ export const COLORS = {
     error: "#F44336",
     success: "#4CAF50",
     notification: "",
+    bw: "#fff",
   },
   dark: {
     background: "#121212",
@@ -25,5 +28,6 @@ export const COLORS = {
     error: "#F44336",
     success: "#4CAF50",
     notification: "",
+    bw: "#000",
   },
 };
