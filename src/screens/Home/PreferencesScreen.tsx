@@ -17,7 +17,7 @@ const categoryIcons: { [key: string]: string } = {
   "Other interests": "plus",
 };
 
-const PreferencesScreen = () => {
+const PreferencesScreen = ({ navigation }: { navigation: any }) => {
   const [selectedPreferences, setSelectedPreferences] = useState<number[]>([]);
   const [getCategories, { data: categoriesData, isLoading }] = useLazyGetCategoriesQuery();
 
@@ -47,6 +47,7 @@ const PreferencesScreen = () => {
           type: "success",
           text1: "Interests are updated",
         });
+        // navigation.navigate("HomeScreen");
       }
     } catch (error: any) {
       console.error("Error updating preferences:", error);

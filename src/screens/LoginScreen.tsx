@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Switch, Alert, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,6 +11,7 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import Toast from "react-native-toast-message";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const LoginScreen = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -32,6 +33,7 @@ const LoginScreen = ({ navigation }) => {
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: {
@@ -39,6 +41,26 @@ const LoginScreen = ({ navigation }) => {
       password: "",
     },
   });
+
+  useEffect(() => {
+    const loadStoredCredentials = async () => {
+      try {
+        const savedEmail = await AsyncStorage.getItem("savedEmail");
+        const savedPassword = await AsyncStorage.getItem("savedPassword");
+        const rememberMeStatus = await AsyncStorage.getItem("rememberMe");
+
+        if (savedEmail && savedPassword && rememberMeStatus === "true") {
+          setValue("email", savedEmail);
+          setValue("password", savedPassword);
+          setRememberMe(true);
+        }
+      } catch (error) {
+        console.error("Error loading stored credentials:", error);
+      }
+    };
+
+    loadStoredCredentials();
+  }, [setValue]);
 
   const handleLogin = async (data) => {
     try {
@@ -138,11 +160,8 @@ const LoginScreen = ({ navigation }) => {
         <View style={styles.rememberMeContainer}>
           <Switch
             value={rememberMe}
-            onValueChange={setRememberMe}
-            trackColor={{
-              false: currentTheme.colors.border,
-              true: currentTheme.colors.primary,
-            }}
+            onValueChange={(value) => setRememberMe(value)}
+            trackColor={{ false: currentTheme.colors.border, true: currentTheme.colors.primary }}
             thumbColor={rememberMe ? currentTheme.colors.background : "#f4f3f4"}
           />
           <Text style={[styles.rememberMeText, { color: currentTheme.colors.text }]}>Remember Me</Text>

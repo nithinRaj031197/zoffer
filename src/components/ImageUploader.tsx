@@ -74,14 +74,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ images, setImages, allowM
       for (const asset of result.assets) {
         const uri = asset.uri;
         const type = asset.type.startsWith("video") ? "video" : "image";
-
+        console.log(asset.duration);
         // Get file size safely
         const fileInfo = await FileSystem.getInfoAsync(uri);
-        if (type === "video" && asset.duration > 10) {
-          Alert.alert("Upload Error", "File duration exceeds 10 seconds.");
+        if (type === "video" && asset.duration > 10000) {
+          Alert.alert("Upload Error", "File duration exceeds 30 seconds.");
           continue;
         }
-        if (fileInfo.exists && fileInfo.size > 1 * 1024 * 1024) {
+        if (fileInfo.exists && fileInfo.size > 50 * 1024 * 1024) {
           Alert.alert("Upload Error", "File size exceeds 1MB.");
           continue;
         }

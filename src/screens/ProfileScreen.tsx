@@ -1,17 +1,59 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useTheme } from "../theme";
 import { ProfileStackParamList } from "../types/generic-type";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MERCHANT_ENUMS } from "../utils/enums/merchant_enums";
+import { useGetUserInfoQuery } from "../api/usersApi";
+import { useLazyGetMechantByIdQuery } from "../api/merchantsApi";
+import ProfileImagePicker from "../components/ProfileImagePicker";
 
 const ProfileScreen = () => {
   const { theme } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
+  const { data } = useGetUserInfoQuery({});
+  const userData = data?.data;
+  console.log(userData);
 
   // State to track if the user is a merchant
-  const [isMerchant, setIsMerchant] = useState(false);
+  const [currentMerchantStatus, setCurrentMerchantStatus] = useState(MERCHANT_ENUMS.BECOME_MERCHANT as string);
+
+  const loadStoredData = async () => {
+    try {
+      const profileSwitchTypeValue = await AsyncStorage.getItem("profileSwitchType");
+
+      if (profileSwitchTypeValue) setCurrentMerchantStatus(profileSwitchTypeValue);
+    } catch (error) {
+      console.error("Error fetching data from AsyncStorage:", error);
+    }
+  };
+
+  useEffect(() => {
+    loadStoredData();
+  }, []);
+
+  // State for merchant verification progress
+  const [progress, setProgress] = useState<number | null>(null);
+
+  // API Hook to fetch merchant details
+  const [getMerchantById, { isLoading }] = useLazyGetMechantByIdQuery();
+
+  // Load Merchant Progress if Profile Switch Type is "COMPLETE_MERCHANT_REGISTRATION"
+  useEffect(() => {
+    if (userData?.profileSwitchType === MERCHANT_ENUMS.COMPLETE_MERCHANT_REGISTRATION && userData?.userMerchantId) {
+      getMerchantById({ merchantId: userData?.userMerchantId })
+        .unwrap()
+        .then((response) => {
+          if (response?.status) {
+            setProgress(Number(response?.data?.metadata?.progressPercentage) || 0);
+          }
+        })
+        .catch((error) => console.error("Error fetching merchant data:", error));
+    }
+  }, [userData]);
 
   const handleBecomeMerchant = () => {
     navigation.navigate("MerchantRegistration");
@@ -40,26 +82,36 @@ const ProfileScreen = () => {
 
       {/* Profile Section */}
       <View style={styles.profileSection}>
-        <View style={[styles.profileImageContainer, { borderColor: theme.colors.border }]}>
-          <Image source={{ uri: "https://via.placeholder.com/150" }} style={[styles.profileImage, { borderColor: theme.colors.border }]} />
-          <Ionicons name="camera-outline" size={18} color={theme.colors.primary} style={styles.cameraIcon} />
-        </View>
-        <Text style={[styles.profileName, { color: theme.colors.text }]}>John Anderson</Text>
-        <Text style={[styles.profileEmail, { color: theme.colors.lightText }]}>john.anderson@email.com</Text>
+        <ProfileImagePicker imageUrl={userData?.imageUrl} onImageSelect={(uri) => console.log("New Image URI:", uri)} />
+        <Text style={[styles.profileName, { color: theme.colors.text }]}>{userData?.name}</Text>
+        <Text style={[styles.profileEmail, { color: theme.colors.lightText }]}>{userData?.email}</Text>
         <Text style={[styles.profileMemberSince, { color: theme.colors.lightText }]}>Member since Jan 2025</Text>
       </View>
 
-      {/* Merchant Account Status */}
-      <View style={[styles.merchantAccount, { backgroundColor: theme.colors.card, shadowColor: theme.colors.text }]}>
-        <Text style={[styles.merchantText, { color: theme.colors.text }]}>Merchant Account</Text>
-        <View style={styles.verificationRow}>
-          <Text style={[styles.verificationText, { color: theme.colors.lightText }]}>Verification in Progress</Text>
-          <Ionicons name="time-outline" size={16} color={theme.colors.lightText} />
+      {/* Merchant Verification Progress */}
+      {userData?.profileSwitchType === MERCHANT_ENUMS.COMPLETE_MERCHANT_REGISTRATION && (
+        <View style={[styles.merchantAccount, { backgroundColor: theme.colors.card, shadowColor: theme.colors.text }]}>
+          <Text style={[styles.merchantText, { color: theme.colors.text }]}>Merchant Verification</Text>
+
+          {/* Show loading while fetching progress */}
+          {isLoading ? (
+            <ActivityIndicator size="small" color={theme.colors.primary} />
+          ) : (
+            <>
+              <View style={styles.verificationRow}>
+                <Text style={[styles.verificationText, { color: theme.colors.lightText }]}>
+                  {progress === 100 ? "Verification Complete" : "Verification in Progress"}
+                </Text>
+                <Ionicons name={progress === 100 ? "checkmark-circle-outline" : "time-outline"} size={16} color={theme.colors.lightText} />
+              </View>
+
+              <View style={styles.progressBar}>
+                <View style={[styles.progressBarFilled, { width: `${progress}%`, backgroundColor: theme.colors.primary }]} />
+              </View>
+            </>
+          )}
         </View>
-        <View style={styles.progressBar}>
-          <View style={[styles.progressBarFilled, { backgroundColor: theme.colors.primary }]} />
-        </View>
-      </View>
+      )}
 
       {/* Options */}
       <View style={[styles.options, { backgroundColor: theme.colors.card }]}>
@@ -74,8 +126,8 @@ const ProfileScreen = () => {
           <Ionicons name="chevron-forward" size={20} color={theme.colors.lightText} />
         </TouchableOpacity>
 
-        {/* Conditionally render based on isMerchant */}
-        {!isMerchant ? (
+        {/* Conditionally render based on currentMerchantStatus */}
+        {currentMerchantStatus === MERCHANT_ENUMS.BECOME_MERCHANT || currentMerchantStatus === MERCHANT_ENUMS.COMPLETE_MERCHANT_REGISTRATION ? (
           <TouchableOpacity style={[styles.optionRow, { borderBottomColor: theme.colors.border }]} onPress={handleBecomeMerchant}>
             <Ionicons name="business-outline" size={20} color={theme.colors.text} />
             <Text style={[styles.optionText, { color: theme.colors.text }]}>Become a Merchant</Text>
@@ -112,23 +164,6 @@ const styles = StyleSheet.create({
   profileSection: {
     alignItems: "center",
     marginVertical: 20,
-  },
-  profileImageContainer: {
-    position: "relative",
-  },
-  profileImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 2,
-  },
-  cameraIcon: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    backgroundColor: "#000",
-    borderRadius: 10,
-    padding: 2,
   },
   profileName: {
     fontSize: 18,
